@@ -70,7 +70,9 @@ def train():
     net.train()
     for epoch in range(begin_epoch, epochs + 1):
         print 'epoch....................' + str(epoch)
-        for step, (image, label_map, center_map, imgs) in enumerate(train_dataset):
+#####==#####
+        #for step, (image, label_map, center_map, imgs) in enumerate(train_dataset):
+        for step, (image, label_map, imgs) in enumerate(train_dataset):
             image = Variable(image.cuda() if cuda else image)                   # 4D Tensor
             # Batch_size  *  3  *  width(368)  *  height(368)
 
@@ -80,11 +82,14 @@ def train():
             # Batch_size  *   6 *   21  *  45  *  45
             label_map = Variable(label_map.cuda() if cuda else label_map)
 
-            center_map = Variable(center_map.cuda() if cuda else center_map)    # 4D Tensor
+#####==#####
+            #center_map = Variable(center_map.cuda() if cuda else center_map)    # 4D Tensor
             # Batch_size  *  width(368) * height(368)
 
             optimizer.zero_grad()
-            pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages * 21 * 45 * 45
+#####==#####
+            #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages * 21 * 45 * 45
+            pred_6 = net(image)  # 5D tensor:  batch size * stages * 21 * 45 * 45
 
             # ******************** calculate loss of each joints ********************
             loss = criterion(pred_6, label_map)

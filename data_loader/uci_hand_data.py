@@ -104,12 +104,15 @@ class UCIHandPoseDataset(Dataset):
         lbl = self.genLabelMap(label, label_size=label_size, joints=self.joints, ratio_x=ratio_x, ratio_y=ratio_y)
         label_maps = torch.from_numpy(lbl)
 
+#####==#####
         # generate the Gaussian heat map
-        center_map = self.genCenterMap(x=self.width / 2.0, y=self.height / 2.0, sigma=21,
-                                       size_w=self.width, size_h=self.height)
-        center_map = torch.from_numpy(center_map)
+        #center_map = self.genCenterMap(x=self.width / 2.0, y=self.height / 2.0, sigma=21,
+        #                               size_w=self.width, size_h=self.height)
+        #center_map = torch.from_numpy(center_map)
 
-        return image.float(), label_maps.float(), center_map.float(), img
+#####==#####
+        #return image.float(), label_maps.float(), center_map.float(), img
+        return image.float(), label_maps.float(), img
 
     def genCenterMap(self, x, y, sigma, size_w, size_h):
         """
@@ -161,7 +164,8 @@ if __name__ == "__main__":
     print 'dataset info ... '
     print img.shape         # 3D Tensor 3 * 368 * 368
     print label.shape       # 3D Tensor 21 * 45 * 45
-    print center.shape      # 2D Tensor 368 * 368
+#####==#####
+    #print center.shape      # 2D Tensor 368 * 368
     print name              # str   ../dataset/train_data/001L0/L0461.jpg
 
     # ***************** draw label map *****************

@@ -174,14 +174,19 @@ net.load_state_dict(state_dict)
 print '********* test data *********'
 net.eval()
 
-for step, (image, center_map, imgs) in enumerate(test_dataset):
+#####==#####
+#for step, (image, center_map, imgs) in enumerate(test_dataset):
+for step, (image, imgs) in enumerate(test_dataset):
     image_cpu = image
     image = Variable(image.cuda() if cuda else image)   # 4D Tensor
     # Batch_size  *  3  *  width(368)  *  height(368)
-    center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
+#####==#####
+    #center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
     # Batch_size  *  width(368) * height(368)
 
-    pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
+#####==#####
+    #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
+    pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
 
     # ****************** from heatmap to label ******************
     Tests_save_label(pred_6[:, 5, :, :, :], step, imgs=imgs)

@@ -152,17 +152,22 @@ net.eval()
 
 all_pcks = {}  # {0005:[[], [],[]], 0011:[[], [],[]] }
 
-for step, (image, label_map, center_map, imgs) in enumerate(test_dataset):
+#####==#####
+#for step, (image, label_map, center_map, imgs) in enumerate(test_dataset):
+for step, (image, label_map, imgs) in enumerate(test_dataset):
     image = Variable(image.cuda() if cuda else image)   # 4D Tensor
     # Batch_size  *  3  *  width(368)  *  height(368)
     label_map = torch.stack([label_map] * 6, dim=1)     # 4D Tensor to 5D Tensor
     # Batch_size  *   6 *   41  *  45  *  45
     label_map = Variable(label_map.cuda() if cuda else label_map)  # 5D Tensor
 
-    center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
+#####==#####
+    #center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
     # Batch_size  *  width(368) * height(368)
 
-    pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
+#####==#####
+    #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
+    pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
     # calculate pck
 
     # ****************** calculate pck  ******************

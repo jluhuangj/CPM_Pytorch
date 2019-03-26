@@ -21,7 +21,8 @@ class CPM(nn.Module):
         self.img_h = 368
         self.img_w = 368
         self.out_c = out_c
-        self.pool_center_lower = nn.AvgPool2d(kernel_size=9, stride=8)
+#####==#####
+        #self.pool_center_lower = nn.AvgPool2d(kernel_size=9, stride=8)
 
         # ******************* Stage 1 *******************
         # ConvNet 1
@@ -122,7 +123,9 @@ class CPM(nn.Module):
 
         return x
 
-    def _stage2(self, pool3_stage2_map, conv7_stage1_map, pool_center_lower_map):
+#####==#####
+    #def _stage2(self, pool3_stage2_map, conv7_stage1_map, pool_center_lower_map):
+    def _stage2(self, pool3_stage2_map, conv7_stage1_map):
         """
         Output result of stage 2
         :param pool3_stage2_map
@@ -132,7 +135,8 @@ class CPM(nn.Module):
         """
         x = F.relu(self.conv4_stage2(pool3_stage2_map))
 
-        x = torch.cat([x, conv7_stage1_map, pool_center_lower_map], dim=1)
+#####==#####
+        #x = torch.cat([x, conv7_stage1_map, pool_center_lower_map], dim=1)
         x = F.relu(self.Mconv1_stage2(x))  # 128
         x = F.relu(self.Mconv2_stage2(x))
         x = F.relu(self.Mconv3_stage2(x))
@@ -141,7 +145,9 @@ class CPM(nn.Module):
 
         return x
 
-    def _stage3(self, pool3_stage2_map, Mconv5_stage2_map, pool_center_lower_map):
+#####==#####
+    #def _stage3(self, pool3_stage2_map, Mconv5_stage2_map, pool_center_lower_map):
+    def _stage3(self, pool3_stage2_map, Mconv5_stage2_map):
         """
         Output result of stage 3
         :param pool3_stage2_map:
@@ -150,7 +156,8 @@ class CPM(nn.Module):
         :return: Mconv5_stage3_map
         """
         x = F.relu(self.conv1_stage3(pool3_stage2_map))
-        x = torch.cat([x, Mconv5_stage2_map, pool_center_lower_map], dim=1)
+#####==#####
+        #x = torch.cat([x, Mconv5_stage2_map, pool_center_lower_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage3(x))
         x = F.relu(self.Mconv2_stage3(x))
@@ -160,7 +167,9 @@ class CPM(nn.Module):
 
         return x
 
-    def _stage4(self, pool3_stage2_map, Mconv5_stage3_map, pool_center_lower_map):
+#####==#####
+    #def _stage4(self, pool3_stage2_map, Mconv5_stage3_map, pool_center_lower_map):
+    def _stage4(self, pool3_stage2_map, Mconv5_stage3_map):
         """
         Output result of stage 4
         :param pool3_stage2_map:
@@ -169,7 +178,8 @@ class CPM(nn.Module):
         :return:Mconv5_stage4_map
         """
         x = F.relu(self.conv1_stage4(pool3_stage2_map)) #
-        x = torch.cat([x, Mconv5_stage3_map, pool_center_lower_map], dim=1)
+#####==#####
+        #x = torch.cat([x, Mconv5_stage3_map, pool_center_lower_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage4(x))
         x = F.relu(self.Mconv2_stage4(x))
@@ -179,7 +189,9 @@ class CPM(nn.Module):
 
         return x
 
-    def _stage5(self, pool3_stage2_map, Mconv5_stage4_map, pool_center_lower_map):
+#####==#####
+    #def _stage5(self, pool3_stage2_map, Mconv5_stage4_map, pool_center_lower_map):
+    def _stage5(self, pool3_stage2_map, Mconv5_stage4_map):
         """
         Output result of stage 5
         :param pool3_stage2_map:
@@ -188,7 +200,8 @@ class CPM(nn.Module):
         :return:Mconv5_stage5_map
         """
         x = F.relu(self.conv1_stage5(pool3_stage2_map))
-        x = torch.cat([x, Mconv5_stage4_map, pool_center_lower_map], dim=1)
+#####==#####
+        #x = torch.cat([x, Mconv5_stage4_map, pool_center_lower_map], dim=1)
         x = F.relu(self.Mconv1_stage5(x))
         x = F.relu(self.Mconv2_stage5(x))
         x = F.relu(self.Mconv3_stage5(x))
@@ -197,7 +210,9 @@ class CPM(nn.Module):
 
         return x
 
-    def _stage6(self, pool3_stage2_map, Mconv5_stage5_map, pool_center_lower_map):
+#####==#####
+    #def _stage6(self, pool3_stage2_map, Mconv5_stage5_map, pool_center_lower_map):
+    def _stage6(self, pool3_stage2_map, Mconv5_stage5_map):
         """
         Output result of stage 6
         :param pool3_stage2_map:
@@ -206,7 +221,8 @@ class CPM(nn.Module):
         :return:Mconv5_stage6_map
         """
         x = F.relu(self.conv1_stage6(pool3_stage2_map))
-        x = torch.cat([x, Mconv5_stage5_map, pool_center_lower_map], dim=1)
+#####==#####
+        #x = torch.cat([x, Mconv5_stage5_map, pool_center_lower_map], dim=1)
         x = F.relu(self.Mconv1_stage6(x))
         x = F.relu(self.Mconv2_stage6(x))
         x = F.relu(self.Mconv3_stage6(x))
@@ -215,25 +231,62 @@ class CPM(nn.Module):
 
         return x
 
-    def forward(self, image, center_map):
+#####==#####
+    #def forward(self, image, center_map):
+    def forward(self, image):
         assert tuple(image.data.shape[-2:]) == (self.img_h, self.img_w)
-        pool_center_lower_map = self.pool_center_lower(center_map)
-        pool_center_lower_map = pool_center_lower_map.unsqueeze(1)
+#####==#####
+        #pool_center_lower_map = self.pool_center_lower(center_map)
+        #pool_center_lower_map = pool_center_lower_map.unsqueeze(1)
 
         conv7_stage1_map = self._stage1(image)  # result of stage 1
 
         pool3_stage2_map = self._middle(image)  #
 
-        Mconv5_stage2_map = self._stage2(pool3_stage2_map, conv7_stage1_map,
-                                         pool_center_lower_map)  # result of stage 2
-        Mconv5_stage3_map = self._stage3(pool3_stage2_map, Mconv5_stage2_map,
-                                         pool_center_lower_map)  # result of stage 3
-        Mconv5_stage4_map = self._stage4(pool3_stage2_map, Mconv5_stage3_map,
-                                         pool_center_lower_map)  # result of stage 4
-        Mconv5_stage5_map = self._stage5(pool3_stage2_map, Mconv5_stage4_map,
-                                         pool_center_lower_map)  # result of stage 5
-        Mconv5_stage6_map = self._stage6(pool3_stage2_map, Mconv5_stage5_map,
-                                         pool_center_lower_map)  # result of stage 6
+#####==#####
+        #Mconv5_stage2_map = self._stage2(pool3_stage2_map, conv7_stage1_map,
+        #                                 pool_center_lower_map)  # result of stage 2
+        #Mconv5_stage3_map = self._stage3(pool3_stage2_map, Mconv5_stage2_map,
+        #                                 pool_center_lower_map)  # result of stage 3
+        #Mconv5_stage4_map = self._stage4(pool3_stage2_map, Mconv5_stage3_map,
+        #                                 pool_center_lower_map)  # result of stage 4
+        #Mconv5_stage5_map = self._stage5(pool3_stage2_map, Mconv5_stage4_map,
+        #                                 pool_center_lower_map)  # result of stage 5
+        #Mconv5_stage6_map = self._stage6(pool3_stage2_map, Mconv5_stage5_map,
+        #                                 pool_center_lower_map)  # result of stage 6
+
+        Mconv5_stage2_map = self._stage2(pool3_stage2_map, conv7_stage1_map)  # result of stage 2
+        Mconv5_stage3_map = self._stage3(pool3_stage2_map, Mconv5_stage2_map)  # result of stage 3
+        Mconv5_stage4_map = self._stage4(pool3_stage2_map, Mconv5_stage3_map)  # result of stage 4
+        Mconv5_stage5_map = self._stage5(pool3_stage2_map, Mconv5_stage4_map)  # result of stage 5
+        Mconv5_stage6_map = self._stage6(pool3_stage2_map, Mconv5_stage5_map)  # result of stage 6
+
+        return torch.stack([conv7_stage1_map, Mconv5_stage2_map, Mconv5_stage3_map,
+                            Mconv5_stage4_map, Mconv5_stage5_map, Mconv5_stage6_map], dim=1)
+
+
+def mse_loss(pred_6, target, weight=None, weighted_loss=False, size_average=True):
+    mask = (weight != 0).float()
+    diff = pred_6 - target.unsqueeze(1)
+    shape = diff.data.shape
+    d2 = (diff ** 2).view(shape[0], shape[1], shape[2], -1).mean(-1)
+    if weighted_loss:
+        loss = torch.sum(d2 * weight)
+    else:
+        loss = torch.sum(d2 * mask)
+    if size_average:
+        loss /= torch.sum(mask)
+    return loss
+
+
+if __name__ == "__main__":
+    net = CPM(out_c=21)
+
+    x = torch.randn(2, 3, 368, 368)  # batch size = 2
+    c = torch.randn(2, 368, 368)  # batch size = 2
+    y = net(x, c)
+    print y.shape  # torch (2, 6, 21, 45, 45)
+
 
         return torch.stack([conv7_stage1_map, Mconv5_stage2_map, Mconv5_stage3_map,
                             Mconv5_stage4_map, Mconv5_stage5_map, Mconv5_stage6_map], dim=1)

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 
-def heatmap_image(img, label, save_dir='../data_loader/img/heat.jpg'):
+def heatmap_image(img, label, joint_num = 21, save_dir='../data_loader/img/heat.jpg'):
     """
     draw heat map of each joint
     :param img:             a PIL Image
@@ -26,8 +26,8 @@ def heatmap_image(img, label, save_dir='../data_loader/img/heat.jpg'):
     y1 = 0
     y2 = im_size
 
-    target = Image.new('RGB', (7 * im_size, 3 * im_size))
-    for i in range(21):
+    target = Image.new('RGB', (joint_num/3 * im_size, 3 * im_size))
+    for i in range(joint_num):
         heatmap = label[i, :, :]    # heat map for single one joint
 
         # remove white margin
@@ -57,7 +57,7 @@ def heatmap_image(img, label, save_dir='../data_loader/img/heat.jpg'):
         x1 += im_size
         x2 += im_size
 
-        if i == 6 or i == 13:
+        if i == 5 or i == 11:
             x1 = 0
             x2 = im_size
             y1 += im_size

@@ -51,7 +51,7 @@ class CPM(nn.Module):
         # ******************* Stage 2 *******************
         self.conv4_stage2 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
         # ConvNet 3
-        self.Mconv1_stage2 = nn.Conv2d(32 + self.out_c + 1, 128, kernel_size=11, padding=5)
+        self.Mconv1_stage2 = nn.Conv2d(32 + self.out_c, 128, kernel_size=11, padding=5)
         self.Mconv2_stage2 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv3_stage2 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4_stage2 = nn.Conv2d(128, 128, kernel_size=1, padding=0)
@@ -61,7 +61,7 @@ class CPM(nn.Module):
         self.conv1_stage3 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
 
         #ConvNet 3
-        self.Mconv1_stage3 = nn.Conv2d(32 + self.out_c + 1, 128, kernel_size=11, padding=5)
+        self.Mconv1_stage3 = nn.Conv2d(32 + self.out_c, 128, kernel_size=11, padding=5)
         self.Mconv2_stage3 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv3_stage3 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4_stage3 = nn.Conv2d(128, 128, kernel_size=1, padding=0)
@@ -71,7 +71,7 @@ class CPM(nn.Module):
 
         self.conv1_stage4 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
 
-        self.Mconv1_stage4 = nn.Conv2d(32 + self.out_c + 1, 128, kernel_size=11, padding=5)
+        self.Mconv1_stage4 = nn.Conv2d(32 + self.out_c, 128, kernel_size=11, padding=5)
         self.Mconv2_stage4 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv3_stage4 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4_stage4 = nn.Conv2d(128, 128, kernel_size=1, padding=0)
@@ -80,7 +80,7 @@ class CPM(nn.Module):
         # ******************* Stage 5 *******************
         self.conv1_stage5 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
 
-        self.Mconv1_stage5 = nn.Conv2d(32 + self.out_c + 1, 128, kernel_size=11, padding=5)
+        self.Mconv1_stage5 = nn.Conv2d(32 + self.out_c, 128, kernel_size=11, padding=5)
         self.Mconv2_stage5 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv3_stage5 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4_stage5 = nn.Conv2d(128, 128, kernel_size=1, padding=0)
@@ -89,7 +89,7 @@ class CPM(nn.Module):
         # ******************* Stage 6 *******************
         self.conv1_stage6 = nn.Conv2d(128, 32, kernel_size=5, padding=2)
 
-        self.Mconv1_stage6 = nn.Conv2d(32 + self.out_c + 1, 128, kernel_size=11, padding=5)
+        self.Mconv1_stage6 = nn.Conv2d(32 + self.out_c, 128, kernel_size=11, padding=5)
         self.Mconv2_stage6 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv3_stage6 = nn.Conv2d(128, 128, kernel_size=11, padding=5)
         self.Mconv4_stage6 = nn.Conv2d(128, 128, kernel_size=1, padding=0)
@@ -123,8 +123,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def _stage2(self, pool3_stage2_map, conv7_stage1_map, pool_center_lower_map):
     def _stage2(self, pool3_stage2_map, conv7_stage1_map):
         """
         Output result of stage 2
@@ -137,6 +135,7 @@ class CPM(nn.Module):
 
 #####==#####
         #x = torch.cat([x, conv7_stage1_map, pool_center_lower_map], dim=1)
+        x = torch.cat([x, conv7_stage1_map], dim=1)
         x = F.relu(self.Mconv1_stage2(x))  # 128
         x = F.relu(self.Mconv2_stage2(x))
         x = F.relu(self.Mconv3_stage2(x))
@@ -145,8 +144,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def _stage3(self, pool3_stage2_map, Mconv5_stage2_map, pool_center_lower_map):
     def _stage3(self, pool3_stage2_map, Mconv5_stage2_map):
         """
         Output result of stage 3
@@ -158,6 +155,7 @@ class CPM(nn.Module):
         x = F.relu(self.conv1_stage3(pool3_stage2_map))
 #####==#####
         #x = torch.cat([x, Mconv5_stage2_map, pool_center_lower_map], dim=1)
+        x = torch.cat([x, Mconv5_stage2_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage3(x))
         x = F.relu(self.Mconv2_stage3(x))
@@ -167,8 +165,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def _stage4(self, pool3_stage2_map, Mconv5_stage3_map, pool_center_lower_map):
     def _stage4(self, pool3_stage2_map, Mconv5_stage3_map):
         """
         Output result of stage 4
@@ -180,6 +176,7 @@ class CPM(nn.Module):
         x = F.relu(self.conv1_stage4(pool3_stage2_map)) #
 #####==#####
         #x = torch.cat([x, Mconv5_stage3_map, pool_center_lower_map], dim=1)
+        x = torch.cat([x, Mconv5_stage3_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage4(x))
         x = F.relu(self.Mconv2_stage4(x))
@@ -189,8 +186,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def _stage5(self, pool3_stage2_map, Mconv5_stage4_map, pool_center_lower_map):
     def _stage5(self, pool3_stage2_map, Mconv5_stage4_map):
         """
         Output result of stage 5
@@ -202,6 +197,7 @@ class CPM(nn.Module):
         x = F.relu(self.conv1_stage5(pool3_stage2_map))
 #####==#####
         #x = torch.cat([x, Mconv5_stage4_map, pool_center_lower_map], dim=1)
+        x = torch.cat([x, Mconv5_stage4_map], dim=1)
         x = F.relu(self.Mconv1_stage5(x))
         x = F.relu(self.Mconv2_stage5(x))
         x = F.relu(self.Mconv3_stage5(x))
@@ -210,8 +206,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def _stage6(self, pool3_stage2_map, Mconv5_stage5_map, pool_center_lower_map):
     def _stage6(self, pool3_stage2_map, Mconv5_stage5_map):
         """
         Output result of stage 6
@@ -223,6 +217,7 @@ class CPM(nn.Module):
         x = F.relu(self.conv1_stage6(pool3_stage2_map))
 #####==#####
         #x = torch.cat([x, Mconv5_stage5_map, pool_center_lower_map], dim=1)
+        x = torch.cat([x, Mconv5_stage5_map], dim=1)
         x = F.relu(self.Mconv1_stage6(x))
         x = F.relu(self.Mconv2_stage6(x))
         x = F.relu(self.Mconv3_stage6(x))
@@ -231,8 +226,6 @@ class CPM(nn.Module):
 
         return x
 
-#####==#####
-    #def forward(self, image, center_map):
     def forward(self, image):
         assert tuple(image.data.shape[-2:]) == (self.img_h, self.img_w)
 #####==#####
@@ -277,19 +270,6 @@ def mse_loss(pred_6, target, weight=None, weighted_loss=False, size_average=True
     if size_average:
         loss /= torch.sum(mask)
     return loss
-
-
-if __name__ == "__main__":
-    net = CPM(out_c=21)
-
-    x = torch.randn(2, 3, 368, 368)  # batch size = 2
-    c = torch.randn(2, 368, 368)  # batch size = 2
-    y = net(x, c)
-    print y.shape  # torch (2, 6, 21, 45, 45)
-
-
-        return torch.stack([conv7_stage1_map, Mconv5_stage2_map, Mconv5_stage3_map,
-                            Mconv5_stage4_map, Mconv5_stage5_map, Mconv5_stage6_map], dim=1)
 
 
 def mse_loss(pred_6, target, weight=None, weighted_loss=False, size_average=True):

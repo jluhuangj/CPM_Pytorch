@@ -3,7 +3,8 @@
 
 """
 
-from data_loader.uci_hand_data import UCIHandPoseDataset as Mydata
+from data_loader.coco_pose_data import COCOPoseDataset as Mydata
+#from data_loader.uci_hand_data import UCIHandPoseDataset as Mydata
 from model.cpm import CPM
 from src.util import *
 
@@ -49,7 +50,7 @@ train_dataset = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
 # *********************** Build model ***********************
 
-net = CPM(out_c=21)
+net = CPM(out_c=18)
 
 if cuda:
     net = net.cuda(device_ids[0])
@@ -98,9 +99,12 @@ def train():
             loss.backward()
             optimizer.step()
 
-            if step % 10 == 0:
-                print '--step .....' + str(step)
-                print '--loss ' + str(float(loss.data[0]))
+#            if step % 10 == 0:
+#                print '--step .....' + str(step)
+#                print '--loss ' + str(float(loss.data[0]))
+
+            print '--step .....' + str(step)
+            print '--loss ' + str(float(loss.data[0]))
 
             if step % 200 == 0:
                 save_images(label_map[:, 5, :, :, :], pred_6[:, 5, :, :, :], step, epoch, imgs)

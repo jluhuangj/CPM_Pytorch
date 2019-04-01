@@ -1,6 +1,6 @@
 [data]
-train_data_dir  = /home/haoyum/UCIHand/train/train_data
-train_label_dir = /home/haoyum/UCIHand/train/train_label
+train_data_dir  = /Users/huangju/Desktop/train_data/data
+train_label_dir = /Users/huangju/Desktop/train_data/label
 save_dir        = ckpt/
 
 test_data_dir  = /home/haoyum/UCIHand/test/test_data

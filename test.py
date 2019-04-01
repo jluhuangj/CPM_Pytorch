@@ -1,5 +1,5 @@
 # test
-from data_loader.uci_hand_data import UCIHandPoseDataset
+from data_loader.coco_pose_data import COCOPoseDataset
 from model.cpm import CPM
 from src.util import *
 
@@ -52,19 +52,18 @@ def cpm_evaluation(label_map, predict_heatmaps, sigma=0.04):
 
 
 # *************** Build dataset ***************
-train_data = UCIHandPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
+train_data = COCOPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
 print 'Test dataset total number of images sequence is ----' + str(len(train_data))
 
 # Data Loader
 test_dataset = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
 # *************** Build model ***************
-net = CPM(out_c=21)
+net = CPM(out_c=18)
 
 
 def load_model(model):
-    # build model
-    net = CPM(out_c=21)
+    net = CPM(out_c=18)
     if torch.cuda.is_available():
         net = net.cuda()
         net = nn.DataParallel(net)  # multi-Gpu
@@ -79,9 +78,7 @@ def load_model(model):
 
 
 print '********* test data *********'
-
 for model in model_epo:
-
     net = load_model(model)
     net.eval()
 
@@ -92,8 +89,7 @@ for model in model_epo:
         sigma += 0.01
 
     print 'model epoch ..' + str(model)
-#####==#####
-    #for step, (image, label_map, center_map, imgs) in enumerate(test_dataset):
+
     for step, (image, label_map, imgs) in enumerate(test_dataset):
         image = Variable(image.cuda() if cuda else image)  # 4D Tensor
         # Batch_size  *  3  *  width(368)  *  height(368)
@@ -104,17 +100,10 @@ for model in model_epo:
         # Batch_size  *   6 *   41  *  45  *  45
         label_map = Variable(label_map.cuda() if cuda else label_map)  # 5D Tensor
 
-#####==#####
-        #center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
-        # Batch_size  *  width(368) * height(368)
-
-#####==#####
-        #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
         pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
 
         sigma = 0.01
         for i in range(10):
-
             # calculate pck
             pck = cpm_evaluation(label_map[:, 5, :, :, :], pred_6[:, 5, :, :, :], sigma=sigma)
             pck_dict[sigma].append(pck)

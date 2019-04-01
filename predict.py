@@ -4,7 +4,7 @@ step 1: predict label and save into json file for every image
 
 """
 
-from data_loader.uci_hand_data import UCIHandPoseDataset as Mydata
+from data_loader.coco_pose_data import COCOPoseDataset
 from model.cpm import CPM
 
 import ConfigParser
@@ -151,7 +151,7 @@ def Tests_save_label(predict_heatmaps, step, imgs):
 
 
 # ************************************ Build dataset ************************************
-test_data = Mydata(data_dir=predict_data_dir)
+test_data = COCOPoseDataset(data_dir=predict_data_dir)
 print 'Test dataset total number of images is ----' + str(len(test_data))
 
 # Data Loader
@@ -174,18 +174,11 @@ net.load_state_dict(state_dict)
 print '********* test data *********'
 net.eval()
 
-#####==#####
-#for step, (image, center_map, imgs) in enumerate(test_dataset):
 for step, (image, imgs) in enumerate(test_dataset):
     image_cpu = image
     image = Variable(image.cuda() if cuda else image)   # 4D Tensor
     # Batch_size  *  3  *  width(368)  *  height(368)
-#####==#####
-    #center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
-    # Batch_size  *  width(368) * height(368)
 
-#####==#####
-    #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
     pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
 
     # ****************** from heatmap to label ******************

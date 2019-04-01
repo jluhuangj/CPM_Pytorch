@@ -4,23 +4,20 @@ step 1: predict label and save into json file for every image
 step 2: save pck value for all images
 """
 
-from handpose_data_cpm import UCIHandPoseDataset
-from cpm import CPM
-
+import os
+import json
 import ConfigParser
 import pandas as pd
 import numpy as np
-import os
 import scipy.misc
-import json
 
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-
-
 from torch.utils.data import DataLoader
 
+from data_loader.coco_pose_data import COCOPoseDataset
+from cpm import CPM
 
 # *********************** hyper parameter  ***********************
 
@@ -127,7 +124,7 @@ def Tests_save_label_PCK(label_map, predict_heatmaps, step, imgs):
 
 
 # ************************************ Build dataset ************************************
-test_data = UCIHandPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
+test_data = COCOPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
 print 'Test dataset total number of images sequence is ----' + str(len(test_data))
 
 # Data Loader
@@ -135,7 +132,7 @@ test_dataset = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
 
 # Build model
-net = CPM(21)
+net = CPM(18)
 if cuda:
     net = net.cuda()
     net = nn.DataParallel(net, device_ids=device_ids)  # multi-Gpu
@@ -161,12 +158,6 @@ for step, (image, label_map, imgs) in enumerate(test_dataset):
     # Batch_size  *   6 *   41  *  45  *  45
     label_map = Variable(label_map.cuda() if cuda else label_map)  # 5D Tensor
 
-#####==#####
-    #center_map = Variable(center_map.cuda() if cuda else center_map)  # 4D Tensor
-    # Batch_size  *  width(368) * height(368)
-
-#####==#####
-    #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
     pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
     # calculate pck
 

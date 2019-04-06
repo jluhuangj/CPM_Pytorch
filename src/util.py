@@ -84,7 +84,7 @@ def save_images(label_map, predict_heatmaps, step, epoch, imgs, save_dir='ckpt/'
         gth = np.zeros((45, 45))
         im = imgs[b].split('/')[-1][1:5]  # image name 0005
 
-        for i in range(21):
+        for i in range(18):
             pre += np.asarray(predict_heatmaps[b, i, :, :].data)  # 2D
             gth += np.asarray(label_map[b, i, :, :].data)  # 2D
             output[0:45,  0:45] = gth
@@ -114,6 +114,6 @@ def PCK(predict, target, label_size=45, sigma=0.04):
         if dis < sigma * label_size:
             pck += 1
 
-    return pck / 21.0
+    return pck / 18.0
 
 

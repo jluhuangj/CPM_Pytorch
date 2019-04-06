@@ -21,8 +21,6 @@ class CPM(nn.Module):
         self.img_h = 368
         self.img_w = 368
         self.out_c = out_c
-#####==#####
-        #self.pool_center_lower = nn.AvgPool2d(kernel_size=9, stride=8)
 
         # ******************* Stage 1 *******************
         # ConvNet 1
@@ -133,8 +131,6 @@ class CPM(nn.Module):
         """
         x = F.relu(self.conv4_stage2(pool3_stage2_map))
 
-#####==#####
-        #x = torch.cat([x, conv7_stage1_map, pool_center_lower_map], dim=1)
         x = torch.cat([x, conv7_stage1_map], dim=1)
         x = F.relu(self.Mconv1_stage2(x))  # 128
         x = F.relu(self.Mconv2_stage2(x))
@@ -153,8 +149,6 @@ class CPM(nn.Module):
         :return: Mconv5_stage3_map
         """
         x = F.relu(self.conv1_stage3(pool3_stage2_map))
-#####==#####
-        #x = torch.cat([x, Mconv5_stage2_map, pool_center_lower_map], dim=1)
         x = torch.cat([x, Mconv5_stage2_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage3(x))
@@ -174,8 +168,6 @@ class CPM(nn.Module):
         :return:Mconv5_stage4_map
         """
         x = F.relu(self.conv1_stage4(pool3_stage2_map)) #
-#####==#####
-        #x = torch.cat([x, Mconv5_stage3_map, pool_center_lower_map], dim=1)
         x = torch.cat([x, Mconv5_stage3_map], dim=1)
         # convnet 3
         x = F.relu(self.Mconv1_stage4(x))
@@ -195,8 +187,6 @@ class CPM(nn.Module):
         :return:Mconv5_stage5_map
         """
         x = F.relu(self.conv1_stage5(pool3_stage2_map))
-#####==#####
-        #x = torch.cat([x, Mconv5_stage4_map, pool_center_lower_map], dim=1)
         x = torch.cat([x, Mconv5_stage4_map], dim=1)
         x = F.relu(self.Mconv1_stage5(x))
         x = F.relu(self.Mconv2_stage5(x))
@@ -215,8 +205,6 @@ class CPM(nn.Module):
         :return:Mconv5_stage6_map
         """
         x = F.relu(self.conv1_stage6(pool3_stage2_map))
-#####==#####
-        #x = torch.cat([x, Mconv5_stage5_map, pool_center_lower_map], dim=1)
         x = torch.cat([x, Mconv5_stage5_map], dim=1)
         x = F.relu(self.Mconv1_stage6(x))
         x = F.relu(self.Mconv2_stage6(x))
@@ -228,25 +216,10 @@ class CPM(nn.Module):
 
     def forward(self, image):
         assert tuple(image.data.shape[-2:]) == (self.img_h, self.img_w)
-#####==#####
-        #pool_center_lower_map = self.pool_center_lower(center_map)
-        #pool_center_lower_map = pool_center_lower_map.unsqueeze(1)
 
         conv7_stage1_map = self._stage1(image)  # result of stage 1
 
         pool3_stage2_map = self._middle(image)  #
-
-#####==#####
-        #Mconv5_stage2_map = self._stage2(pool3_stage2_map, conv7_stage1_map,
-        #                                 pool_center_lower_map)  # result of stage 2
-        #Mconv5_stage3_map = self._stage3(pool3_stage2_map, Mconv5_stage2_map,
-        #                                 pool_center_lower_map)  # result of stage 3
-        #Mconv5_stage4_map = self._stage4(pool3_stage2_map, Mconv5_stage3_map,
-        #                                 pool_center_lower_map)  # result of stage 4
-        #Mconv5_stage5_map = self._stage5(pool3_stage2_map, Mconv5_stage4_map,
-        #                                 pool_center_lower_map)  # result of stage 5
-        #Mconv5_stage6_map = self._stage6(pool3_stage2_map, Mconv5_stage5_map,
-        #                                 pool_center_lower_map)  # result of stage 6
 
         Mconv5_stage2_map = self._stage2(pool3_stage2_map, conv7_stage1_map)  # result of stage 2
         Mconv5_stage3_map = self._stage3(pool3_stage2_map, Mconv5_stage2_map)  # result of stage 3

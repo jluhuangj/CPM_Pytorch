@@ -159,10 +159,10 @@ test_dataset = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
 
 # Build model
-net = CPM(21)
+net = CPM(18)
 if cuda:
     net = net.cuda()
-    net = nn.DataParallel(net, device_ids=device_ids)  # multi-Gpu
+    #net = nn.DataParallel(net, device_ids=device_ids)  # multi-Gpu
 
 model_path = os.path.join('ckpt/model_epoch' + str(best_model)+'.pth')
 state_dict = torch.load(model_path)

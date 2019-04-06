@@ -2,14 +2,8 @@
 
 
 """
-
-from data_loader.coco_pose_data import COCOPoseDataset as Mydata
-#from data_loader.uci_hand_data import UCIHandPoseDataset as Mydata
-from model.cpm import CPM
-from src.util import *
-
-
 import os
+import time
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -18,6 +12,9 @@ import ConfigParser
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
+from data_loader.coco_pose_data import COCOPoseDataset as Mydata
+from model.cpm import CPM
+from src.util import *
 
 # multi-GPU
 device_ids = [0, 1, 2, 3]
@@ -53,8 +50,7 @@ train_dataset = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 net = CPM(out_c=18)
 
 if cuda:
-    net = net.cuda(device_ids[0])
-    net = nn.DataParallel(net, device_ids=device_ids)
+    net = net.cuda()
 
 
 if begin_epoch > 0:
@@ -69,10 +65,9 @@ def train():
     criterion = nn.MSELoss(size_average=True)                       # loss function MSE average
 
     net.train()
-    for epoch in range(begin_epoch, epochs + 1):
-        print 'epoch....................' + str(epoch)
-#####==#####
-        #for step, (image, label_map, center_map, imgs) in enumerate(train_dataset):
+    for epoch in range(begin_epoch+1, epochs + 1):
+        epoch_start_time = time.time()
+        c_time = time.time()
         for step, (image, label_map, imgs) in enumerate(train_dataset):
             image = Variable(image.cuda() if cuda else image)                   # 4D Tensor
             # Batch_size  *  3  *  width(368)  *  height(368)
@@ -83,13 +78,7 @@ def train():
             # Batch_size  *   6 *   21  *  45  *  45
             label_map = Variable(label_map.cuda() if cuda else label_map)
 
-#####==#####
-            #center_map = Variable(center_map.cuda() if cuda else center_map)    # 4D Tensor
-            # Batch_size  *  width(368) * height(368)
-
             optimizer.zero_grad()
-#####==#####
-            #pred_6 = net(image, center_map)  # 5D tensor:  batch size * stages * 21 * 45 * 45
             pred_6 = net(image)  # 5D tensor:  batch size * stages * 21 * 45 * 45
 
             # ******************** calculate loss of each joints ********************
@@ -99,18 +88,25 @@ def train():
             loss.backward()
             optimizer.step()
 
-#            if step % 10 == 0:
-#                print '--step .....' + str(step)
-#                print '--loss ' + str(float(loss.data[0]))
-
-            print '--step .....' + str(step)
-            print '--loss ' + str(float(loss.data[0]))
+            if step % 10 == 0:
+                print 'Train Epoch: {0} [{1}/{2} ({3:.0f}%)], Took: {4:d}h {5:d}m {6:.2f}s, Loss:{7:.6f},'.format(epoch,
+                        step*(batch_size), len(train_dataset.dataset),
+                        100.*step*(batch_size) / len(train_dataset.dataset),
+                        int(time.time() - c_time)/3600,
+                        int(time.time() - c_time)%3600/60,
+                        int(time.time() - c_time)%3600%60,
+                        loss.item())
+                c_time = time.time()
 
             if step % 200 == 0:
                 save_images(label_map[:, 5, :, :, :], pred_6[:, 5, :, :, :], step, epoch, imgs)
 
-        if epoch % 5 == 0:
-            torch.save(net.state_dict(), os.path.join(save_dir, 'model_epoch{:d}.pth'.format(epoch)))
+        print 'epoch {0:d} spend {1:d}h {2:d}m {3:d}s ...'.format(step,
+                int((time.time() - epoch_start_time)/3600,
+                int(time.time() - epoch_start_time)%3600/60,
+                int(time.time() - epoch_start_time)%3600%60))
+
+        torch.save(net.state_dict(), os.path.join(save_dir, 'model_epoch{:d}.pth'.format(epoch)))
 
     print 'train done!'
 

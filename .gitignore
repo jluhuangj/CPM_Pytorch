@@ -1,4 +1,10 @@
 .DS_Store
 dataset/.DS_Store
 *pyc
-*.swp
+.swp
+.log
+
+tags
+
+ckpt/
+log/

@@ -82,7 +82,7 @@ def save_images(label_map, predict_heatmaps, step, epoch, imgs, save_dir='ckpt/'
 
         pre = np.zeros((45, 45))  #
         gth = np.zeros((45, 45))
-        im = imgs[b].split('/')[-1][1:5]  # image name 0005
+        im = imgs[b].split('/')[-1][:4]  # image name 0005
 
         for i in range(18):
             pre += np.asarray(predict_heatmaps[b, i, :, :].data)  # 2D

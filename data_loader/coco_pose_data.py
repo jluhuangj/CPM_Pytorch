@@ -32,7 +32,7 @@ sys.path.append('../')
 from src.util import *
 
 class COCOPoseDataset(Dataset):
-    def __init__(self, data_dir, label_dir, joints=18, transform=None, sigma=1):
+    def __init__(self, data_dir, label_dir='', joints=18, transform=None, sigma=1):
         self.height = 368
         self.width = 368
 
@@ -74,8 +74,6 @@ class COCOPoseDataset(Dataset):
         label_size = self.width / 8 - 1         # 45
         img = self.images_dir[idx]              # '.../001L0/L0005.jpg'
 
-        labels = json.load(open(self.label_dir + '/data_label.json'))
-
         # get image
         im = Image.open(img)                # read image
         w, h, c = np.asarray(im).shape      # weight 256 * height 256 * 3
@@ -84,12 +82,18 @@ class COCOPoseDataset(Dataset):
         im = im.resize((self.width, self.height))                       # unit8      weight 368 * height 368 * 3
         image = transforms.ToTensor()(im)   # 3D Tensor  3 * height 368 * weight 368
 
-        # get label map
-        label = labels[img.split('/')[-1][:-4]]
-        lbl = self.genLabelMap(label, label_size=label_size, joints=self.joints, ratio_x=ratio_x, ratio_y=ratio_y)
-        label_maps = torch.from_numpy(lbl)
+        if self.label_dir != '':
+            labels = json.load(open(self.label_dir + '/data_label.json'))
 
-        return image.float(), label_maps.float(), img
+            # get label map
+            label = labels[img.split('/')[-1][:-4]]
+            lbl = self.genLabelMap(label, label_size=label_size, joints=self.joints, ratio_x=ratio_x, ratio_y=ratio_y)
+            label_maps = torch.from_numpy(lbl)
+
+            return image.float(), label_maps.float(), img
+        else:
+            return image.float(), img
+
 
     def genCenterMap(self, x, y, sigma, size_w, size_h):
         """
@@ -133,39 +137,45 @@ class COCOPoseDataset(Dataset):
 
 # test case
 if __name__ == "__main__":
-    data_dir = '/Users/huangju/Desktop/train_data/data'
-    label_dir = '/Users/huangju/Desktop/train_data/label'
+    #data_dir = '/Users/huangju/Desktop/pose-data/train_data/data'
+    #label_dir = '/Users/huangju/Desktop/pose-data/train_data/label'
+    data_dir = '/home/hj/Desktop/pose-data/train_data/data'
+    label_dir = '/home/hj/Desktop/pose-data/train_data/label'
+    #data_dir = '/home/hj/Desktop/pose-data/test_data/data'
+    save_dir = './img'
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     data = COCOPoseDataset(data_dir=data_dir, label_dir=label_dir)
+    #data = COCOPoseDataset(data_dir=data_dir)
 
     img, label, name = data[1]
+    #img, name = data[1]
+
     print 'dataset info ... '
     print img.shape         # 3D Tensor 3 * 368 * 368
     print label.shape       # 3D Tensor 21 * 45 * 45
     print name              # str   ../dataset/train_data/001L0/L0461.jpg
+    print label
 
-    # ***************** draw label map *****************
-    print 'draw label map ....'
-    lab = np.asarray(label)
-    out_labels = np.zeros(((45, 45)))
-    for i in range(18):
-        out_labels += lab[i, :, :]
-    scipy.misc.imsave('img/coco_label.jpg', out_labels)
-
-    # ***************** draw image *****************
-    print 'draw heat map ....'
-    im_size = 368
-    img = transforms.ToPILImage()(img)
-    img.save('img/coco_img.jpg')
-    heatmap = np.asarray(label[0, :, :])
-
-    im = Image.open('img/coco_img.jpg')
-
-    heatmap_image(img, lab, joint_num=18, save_dir='img/coco_heat.jpg')
-
-
-
-
-
-
+#    # ***************** draw label map *****************
+#    print 'draw label map ....'
+#    lab = np.asarray(label)
+#    out_labels = np.zeros(((45, 45)))
+#    for i in range(18):
+#        out_labels += lab[i, :, :]
+#    scipy.misc.imsave(os.path.join(save_dir, 'coco_label.jpg'), out_labels)
+#
+#    # ***************** draw image *****************
+#    print 'draw heat map ....'
+#    im_size = 368
+#    img = transforms.ToPILImage()(img)
+#    img.save(os.path.join(save_dir, 'coco_img.jpg'))
+#    heatmap = np.asarray(label[0, :, :])
+#
+#    im = Image.open(os.path.join(save_dir, 'coco_img.jpg'))
+#
+#    heatmap_image(img, lab, joint_num=18, save_dir=os.path.join(save_dir, 'coco_heat.jpg'))
 
 

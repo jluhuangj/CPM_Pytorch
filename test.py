@@ -15,24 +15,15 @@ from torch.utils.data import DataLoader
 
 
 # *********************** hyper parameter  ***********************
-
-# multi-GPU
-device_ids = [0, 1, 2, 3]
-
 config = ConfigParser.ConfigParser()
 config.read('conf.text')
 test_data_dir = config.get('data', 'test_data_dir')
 test_label_dir = config.get('data', 'test_label_dir')
-
-learning_rate = config.getfloat('training', 'learning_rate')
 batch_size = config.getint('training', 'batch_size')
-epochs = config.getint('training', 'epochs')
-begin_epoch = config.getint('training', 'begin_epoch')
 
 cuda = torch.cuda.is_available()
 
-
-model_epo = [10, 15, 20, 25, 30, 35, 40]
+model_epo = [10, 15, 20, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
 
 
 def cpm_evaluation(label_map, predict_heatmaps, sigma=0.04):
@@ -52,21 +43,19 @@ def cpm_evaluation(label_map, predict_heatmaps, sigma=0.04):
 
 
 # *************** Build dataset ***************
-train_data = COCOPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
-print 'Test dataset total number of images sequence is ----' + str(len(train_data))
+test_data = COCOPoseDataset(data_dir=test_data_dir, label_dir=test_label_dir)
+print 'Test dataset total number of images sequence is ----' + str(len(test_data))
 
 # Data Loader
-test_dataset = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+test_dataset = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
 # *************** Build model ***************
 net = CPM(out_c=18)
-
 
 def load_model(model):
     net = CPM(out_c=18)
     if torch.cuda.is_available():
         net = net.cuda()
-        net = nn.DataParallel(net)  # multi-Gpu
 
     save_path = os.path.join('ckpt/model_epoch' + str(model)+'.pth')
     state_dict = torch.load(save_path)
@@ -91,14 +80,16 @@ for model in model_epo:
     print 'model epoch ..' + str(model)
 
     for step, (image, label_map, imgs) in enumerate(test_dataset):
-        image = Variable(image.cuda() if cuda else image)  # 4D Tensor
+        label_map = torch.stack([label_map] * 6, dim=1)
+
+        #with torch.no_grad():
+        image = Variable(image.cuda() if cuda else image, volatile=True)  # 4D Tensor
+        label_map = Variable(label_map.cuda() if cuda else label_map, volatile=True)  # 5D Tensor
         # Batch_size  *  3  *  width(368)  *  height(368)
 
         # 4D Tensor to 5D Tensor
-        label_map = torch.stack([label_map] * 6, dim=1)
         # Batch_size  *  41 *   45  *  45
         # Batch_size  *   6 *   41  *  45  *  45
-        label_map = Variable(label_map.cuda() if cuda else label_map)  # 5D Tensor
 
         pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
 
@@ -128,22 +119,4 @@ for model in model_epo:
 
     results = pd.DataFrame(results)
     results.to_csv('ckpt/' + str(model) + 'test_pck.csv')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -101,23 +101,18 @@ def train():
             if step % 200 == 0:
                 save_images(label_map[:, 5, :, :, :], pred_6[:, 5, :, :, :], step, epoch, imgs)
 
-        print 'epoch {0:d} spend {1:d}h {2:d}m {3:d}s ...'.format(step,
-                int((time.time() - epoch_start_time)/3600,
-                int(time.time() - epoch_start_time)%3600/60,
-                int(time.time() - epoch_start_time)%3600%60))
-
         torch.save(net.state_dict(), os.path.join(save_dir, 'model_epoch{:d}.pth'.format(epoch)))
+
+        print 'current time: {0} epoch {1} spend {2:d}h {3:d}m {4:d}s ...'.format(
+                time.asctime(time.localtime(time.time())),
+                step,
+                int(time.time() - epoch_start_time)/3600,
+                int(time.time() - epoch_start_time)%3600/60,
+                int(time.time() - epoch_start_time)%3600%60)
 
     print 'train done!'
 
 
 if __name__ == '__main__':
     train()
-
-
-
-
-
-
-
 

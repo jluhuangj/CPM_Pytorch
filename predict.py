@@ -1,53 +1,40 @@
 """
 Predict 21 key points for images without ground truth
 step 1: predict label and save into json file for every image
-
 """
-
-from data_loader.coco_pose_data import COCOPoseDataset
-from model.cpm import CPM
-
+import os
+import sys
+import json
 import ConfigParser
 import numpy as np
-import os
-import json
-
 
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
+from data_loader.coco_pose_data import COCOPoseDataset
+from model.cpm import CPM
+
 
 # *********************** hyper parameter  ***********************
-
-device_ids = [0, 1, 2, 3]        # multi-GPU
 
 config = ConfigParser.ConfigParser()
 config.read('conf.text')
 
-batch_size = config.getint('training', 'batch_size')
-epochs = config.getint('training', 'epochs')
-begin_epoch = config.getint('training', 'begin_epoch')
-
+batch_size = config.getint('predict', 'batch_size')
 best_model = config.getint('test', 'best_model')
 
-predict_data_dir = config.get('predict', 'predict_data_dir')
-predict_label_dir = config.get('predict', 'predict_label_dir')
-predict_labels_dir = config.get('predict', 'predict_labels_dir')
+predict_data_dir    = config.get('predict', 'predict_data_dir')
+save_label_dir      = config.get('predict', 'save_label_dir')
+save_heatmap_dir    = config.get('predict', 'save_heatmap_dir')
 
+if not os.path.exists(save_label_dir):
+    os.mkdir(save_label_dir)
 
-heatmap_dir = '/home/haoyum/Tdata/heat_maps/'
 cuda = torch.cuda.is_available()
 
-sigma = 0.04
-
 # *********************** function ***********************
-if not os.path.exists(predict_label_dir):
-    os.mkdir(predict_label_dir)
-
-if not os.path.exists(predict_labels_dir):
-    os.mkdir(predict_labels_dir)
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -55,16 +42,13 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import torchvision.transforms as transforms
 
-def heatmap_image(img, label,save_dir='/home/haoyum/Tdata/heat_maps/'):
+def heatmap_image(img, label, save_dir = save_label_dir):
     """
     draw heat map of each joint
     :param img:             a PIL Image
     :param heatmap          type: numpy     size: 21 * 45 * 45
-
-
     :return:
     """
-
     im_size = 64
 
     img = img.resize((im_size, im_size))
@@ -74,8 +58,8 @@ def heatmap_image(img, label,save_dir='/home/haoyum/Tdata/heat_maps/'):
     y1 = 0
     y2 = im_size
 
-    target = Image.new('RGB', (7 * im_size, 3 * im_size))
-    for i in range(21):
+    target = Image.new('RGB', (6 * im_size, 3 * im_size))
+    for i in range(18):
         heatmap = label[i, :, :]    # heat map for single one joint
 
         # remove white margin
@@ -105,7 +89,7 @@ def heatmap_image(img, label,save_dir='/home/haoyum/Tdata/heat_maps/'):
         x1 += im_size
         x2 += im_size
 
-        if i == 6 or i == 13:
+        if i == 5 or i == 11:
             x1 = 0
             x2 = im_size
             y1 += im_size
@@ -115,22 +99,19 @@ def heatmap_image(img, label,save_dir='/home/haoyum/Tdata/heat_maps/'):
     os.system('rm tmp.jpg')
 
 
-def Tests_save_label(predict_heatmaps, step, imgs):
+def save_label(predict_heatmaps, imgs, image=''):
     """
     :param predict_heatmaps:    4D Tensor    batch size * 21 * 45 * 45
-    :param step:
     :param imgs:                batch_size * 1
     :return:
     """
     for b in range(predict_heatmaps.shape[0]):  # for each batch (person)
-        seq = imgs[b].split('/')[-2]  # sequence name 001L0
-        label_dict = {}  # all image label in the same seq
+        img_name = imgs[b].split('/')[-1]
 
-        labels_list = []  # 21 points label for one image [[], [], [], .. ,[]]
-        im = imgs[b].split('/')[-1][1:5]  # image name 0005
+        labels_list = []  # 18 points label for one image [[], [], [], .. ,[]]
 
         # ****************** save image and label of 21 joints ******************
-        for i in range(21):  # for each joint
+        for i in range(18):  # for each joint
             tmp_pre = np.asarray(predict_heatmaps[b, i, :, :].data)  # 2D
             #  get label of original image
             corr = np.where(tmp_pre == np.max(tmp_pre))
@@ -140,37 +121,42 @@ def Tests_save_label(predict_heatmaps, step, imgs):
             y = int(y)
             labels_list.append([y, x])  # save img label to json
 
-        label_dict[im] = labels_list  # save label
+        #print labels_list
+        labels_str = ','.join([','.join([str(x) for x in point]) for point in labels_list])
+        #print labels_str
 
         # ****************** save label ******************
-        save_dir_label = predict_label_dir + '/' + seq          # 101L0
-        if not os.path.exists(save_dir_label):
-            os.mkdir(save_dir_label)
-        json.dump(label_dict, open(save_dir_label + '/' + str(step) +
-                                   '_' + im + '.json', 'w'), sort_keys=True, indent=4)
+        save_dir_label = os.path.join(save_label_dir, img_name + '.txt')
+        with open(save_dir_label, 'w') as f:
+            f.write(labels_str)
+
+        if save_heatmap_dir != '':
+            import cv2
+            image = image.numpy()
+            cv2.imwrite(os.path.join(save_heatmap_dir, img_name), image)
+            for point in labels_list:
+                image = cv2.circle(image, tuple(point), 6, (0, 0, 255), thickness=-1)
+            #cv2.imwrite(os.path.join(save_heatmap_dir, img_name), image)
 
 
 # ************************************ Build dataset ************************************
+
 test_data = COCOPoseDataset(data_dir=predict_data_dir)
 print 'Test dataset total number of images is ----' + str(len(test_data))
 
 # Data Loader
 test_dataset = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
-
 # Build model
 net = CPM(18)
 if cuda:
     net = net.cuda()
-    #net = nn.DataParallel(net, device_ids=device_ids)  # multi-Gpu
 
 model_path = os.path.join('ckpt/model_epoch' + str(best_model)+'.pth')
 state_dict = torch.load(model_path)
 net.load_state_dict(state_dict)
 
-
 # **************************************** test all images ****************************************
-
 print '********* test data *********'
 net.eval()
 
@@ -179,46 +165,26 @@ for step, (image, imgs) in enumerate(test_dataset):
     image = Variable(image.cuda() if cuda else image)   # 4D Tensor
     # Batch_size  *  3  *  width(368)  *  height(368)
 
+    print imgs
     pred_6 = net(image)  # 5D tensor:  batch size * stages(6) * 41 * 45 * 45
 
     # ****************** from heatmap to label ******************
-    Tests_save_label(pred_6[:, 5, :, :, :], step, imgs=imgs)
-
+    save_label(pred_6[:, 5, :, :, :], imgs=imgs, image = image_cpu)
+    #sys.exit()
 
     # ****************** draw heat maps ******************
-    for b in range(image_cpu.shape[0]):
-        img = image_cpu[b, :, :, :]         # 3D Tensor
-        img = transforms.ToPILImage()(img.data)        # PIL Image
-        pred = np.asarray(pred_6[b, 5, :, :, :])      # 3D Numpy
+    if save_heatmap_dir != '':
+        for b in range(image_cpu.shape[0]):
+            img = image_cpu[b, :, :, :]         # 3D Tensor
+            img = transforms.ToPILImage()(img.data)        # PIL Image
+            pred = np.asarray(pred_6[b, 5, :, :, :].data)      # 3D Numpy
+            #pred = pred_6[b, 5, :, :, :].cpu().detach().numpy()      # 3D Numpy
 
-        seq = imgs[b].split('/')[-2]  # sequence name 001L0
-        im = imgs[b].split('/')[-1][1:5]  # image name 0005
-        if not os.path.exists(heatmap_dir + seq):
-            os.mkdir(heatmap_dir+seq)
-        img_dir = heatmap_dir + seq + '/' + im + '.jpg'
-        heatmap_image(img, pred, save_dir=img_dir)
+            img_name = imgs[b].split('/')[-1]
+            if not os.path.exists(save_heatmap_dir):
+                os.mkdir(save_heatmap_dir)
+            img_dir = save_heatmap_dir + '/' + img_name + '.jpg'
+            heatmap_image(img, pred, save_dir=img_dir)
 
+print 'success...'
 
-# ****************** merge label json file ******************
-
-print 'merge json file ............ '
-
-seqs = os.listdir(predict_label_dir)
-
-for seq in seqs:
-    if seq == '.DS_Store':
-        continue
-    print seq
-
-    s = os.path.join(predict_label_dir, seq)
-    steps = os.listdir(s)
-    d = {}
-    for step in steps:
-        lbl = json.load(open(s + '/' + step))
-        d = dict(d.items() + lbl.items())
-
-    json.dump(d, open(predict_labels_dir + '/' + seq + '.json', 'w'), sort_keys=True, indent=4)
-
-os.system('rm -r '+predict_label_dir)
-
-print 'build video ......'

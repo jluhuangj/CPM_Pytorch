@@ -1,33 +1,30 @@
 [data]
-train_data_dir  = /home/hj/Desktop/pose-data/train_data/data
-train_label_dir = /home/hj/Desktop/pose-data/train_data/label
-save_dir        = ckpt/
+train_data_dir      = /home/hj/Desktop/pose-data/train_data/data
+train_label_dir     = /home/hj/Desktop/pose-data/train_data/label
+save_dir            = ckpt/
 
-test_data_dir  = /home/haoyum/UCIHand/test/test_data
-test_label_dir = /home/haoyum/UCIHand/test/test_label
+test_data_dir       = /home/hj/Desktop/pose-data/train_data/data
+test_label_dir      = /home/hj/Desktop/pose-data/train_data/label
 
 
 [training]
-learning_rate   = 8e-6
-batch_size      = 6
-epochs          = 50
-begin_epoch     = 25
-
+#8e-6 -> 4e-6 
+learning_rate       = 2e-6          
+batch_size          = 6
+epochs              = 50
+begin_epoch         = 44
 
 [test]
-best_model       =30
-predict_label_dir = save/test_label
-predict_labels_dir = save/test_labels
-pck_save_dir    = save/test_pck.csv
+best_model          = 30
+predict_label_dir   = save/test_label
+predict_labels_dir  = save/test_labels
+pck_save_dir        = save/test_pck.csv
 
 
 [predict]
-best_model       =30
-predict_data_dir = /home/haoyum/Tdata/crop_img
-predict_label_dir = /home/haoyum/Tdata/predict_label
-predict_labels_dir = /home/haoyum/Tdata/predict_labels
-
-
-
-
+batch_size          = 1
+best_model          = 50
+predict_data_dir    = /home/hj/Desktop/pose-data/test_data/data
+save_label_dir      = /home/hj/Desktop/hj-pytorch/code/CPM_Pytorch/result 
+save_heatmap_dir    = /home/hj/Desktop/hj-pytorch/code/CPM_Pytorch/result 
 
